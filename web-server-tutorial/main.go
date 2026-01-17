@@ -9,9 +9,9 @@ import (
 )
 
 type User struct {
-	id   int
-	name string
-	age  int
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+	Age  int    `json:"age"`
 }
 
 // for thread safty use sync.Mutex or sync.RWMutex
@@ -28,7 +28,7 @@ func main() {
 		fmt.Print("Hello world")
 	})
 
-	mux.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("POST /users", func(w http.ResponseWriter, r *http.Request) {
 		var user User
 		err := json.NewDecoder(r.Body).Decode(&user)
 
@@ -37,15 +37,18 @@ func main() {
 			return
 		}
 
-		if user.name == "" || user.age <= 0 {
+		if user.Name == "" || user.Age <= 0 {
 			http.Error(w, "Invalid user data", http.StatusBadRequest)
+			fmt.Println(user)
 			return
 		}
 
 		fmt.Println(user)
 
 		cacheMutex.Lock()
-		users[len(users)+1] = user
+		newID := len(users) + 1
+		user.ID = newID
+		users[newID] = user
 
 		cacheMutex.Unlock()
 		w.WriteHeader(http.StatusNoContent)
