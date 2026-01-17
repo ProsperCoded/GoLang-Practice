@@ -4,24 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 )
 
 type User struct {
-	id int 
+	id   int
 	name string
-	age int 
-
+	age  int
 }
-
 
 // for thread safty use sync.Mutex or sync.RWMutex
 
 var cacheMutex sync.RWMutex
 
-func main (){
+func main() {
 
-	users := []User{}
+	users := make(map[int]User)
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -29,8 +28,8 @@ func main (){
 		fmt.Print("Hello world")
 	})
 
-	mux.HandleFunc("POST /users", func(w http.ResponseWriter, r *http.Request) {
-		var user User;
+	mux.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+		var user User
 		err := json.NewDecoder(r.Body).Decode(&user)
 
 		if err != nil {
@@ -45,7 +44,53 @@ func main (){
 
 		fmt.Println(user)
 
-		users[len(users) + 1] = user
+		cacheMutex.Lock()
+		users[len(users)+1] = user
+
+		cacheMutex.Unlock()
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	mux.HandleFunc("/users/{id}", func(w http.ResponseWriter, r *http.Request) {
+		cacheMutex.RLock()
+
+		id, err := strconv.Atoi(r.URL.Path[len("/users/"):])
+		if err != nil {
+			http.Error(w, "Invalid user ID", http.StatusBadRequest)
+			return
+		}
+		defer cacheMutex.RUnlock()
+
+		user, ok := users[id]
+		if !ok {
+			http.Error(w, "User not found", http.StatusNotFound)
+			return
+		}
+		j, err := json.Marshal(user)
+
+		if err != nil {
+			http.Error(w, "Unable to marshal user data", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(j)
+	})
+
+	mux.HandleFunc("DELETE /users/{id}", func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(r.URL.Path[len("/users/"):])
+		if err != nil {
+			http.Error(w, "Invalid user ID", http.StatusBadRequest)
+			return
+		}
+
+		_, ok := users[id]
+		if !ok {
+			http.Error(w, "User not found", http.StatusNotFound)
+			return
+		}
+		cacheMutex.Lock()
+		delete(users, id)
+		cacheMutex.Unlock()
 		w.WriteHeader(http.StatusNoContent)
 
 	})
