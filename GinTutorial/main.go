@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"example.com/m/GinTutorial/controllers"
+	"example.com/m/GinTutorial/middlewares"
 	"example.com/m/GinTutorial/service"
 	"github.com/gin-gonic/gin"
 )
@@ -14,8 +15,10 @@ var (
 )
 
 func main() {
-	r := gin.Default()
+	r := gin.New()
 
+	
+	r.Use(gin.Recovery(), middlewares.Logger())
 	r.GET("/posts", func(c *gin.Context) {
 		c.String(200, "Hello, World!")
 		c.JSON(200, videoController.FindAll())
