@@ -20,6 +20,8 @@ func New() VideoService {
 
 func (service *videoService) Save(video entity.Video) entity.Video {
 	service.videos = append(service.videos, video)
+
+	
 	return video
 }
 

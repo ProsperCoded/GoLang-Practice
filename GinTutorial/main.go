@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 
 	"example.com/m/GinTutorial/controllers"
 	"example.com/m/GinTutorial/middlewares"
 	"example.com/m/GinTutorial/service"
 	"github.com/gin-gonic/gin"
-	gindump "github.com/tpkeeper/gin-dump"
 )
 
 var (
@@ -35,7 +35,13 @@ func main() {
 	})
 
 	r.POST("/posts", func (ctx *gin.Context){
-		ctx.JSON(200, videoController.Save(ctx))
+		err := videoController.Save(ctx)
+
+		if err != nil {
+			ctx.JSON(400, gin.H{"error": err.Error()})	
+		}else {
+			ctx.JSON(http.StatusOk, gin.H{"message": "Video is valid and saved"})
+		}
 	})
 	fmt.Println("Server running at http://localhost:8080/")
 	r.Run(":8080")			

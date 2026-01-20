@@ -16,12 +16,16 @@ type controller struct {
 }
 
 func New(videoService service.VideoService) VideoController {
+
 	return controller{service: videoService}
 }
 
-func (c controller) Save(ctx *gin.Context) entity.Video {
+func (c controller) Save(ctx *gin.Context){
 	var video entity.Video
-	ctx.ShouldBindJSON(&video)
+	err := ctx.ShouldBindJSON(&video)
+	if err !=nil{
+		return err;
+	}
 	c.service.Save(video)
 	return video
 }
