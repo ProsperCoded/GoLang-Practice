@@ -1,0 +1,21 @@
+{{ define "index.html" }}
+{{ template "header.html" . }}
+    <main>
+        <div class="container" style="padding: 20px; max-width: 900px; margin: 20px auto; background: white; border-radius: 8px;">
+            <h2>Video Content</h2>
+            {{ if .Videos }}
+                {{ range .Videos }}
+                    <div style="background: #e8f4f8; padding: 15px; border-left: 4px solid #2196F3; margin-bottom: 15px; border-radius: 4px;">
+                        <h3>{{ .Title }}</h3>
+                        <p><strong>URL:</strong> <a href="{{ .URL }}" target="_blank">{{ .URL }}</a></p>
+                        <p><strong>Description:</strong> {{ .Description }}</p>
+                        <p><strong>Author:</strong> {{ .Author.FirstName }} {{ .Author.LastName }} ({{ .Author.Email }}) - Age: {{ .Author.Age }}</p>
+                    </div>
+                {{ end }}
+            {{ else }}
+                <p style="color: #666;">No video content available.</p>
+            {{ end }}
+        </div>
+    </main>
+{{ template "footer.html" . }}
+{{ end }}

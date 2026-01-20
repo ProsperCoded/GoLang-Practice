@@ -24,17 +24,20 @@ func main() {
 	setupLogOutput()
 	r := gin.New()
 
-	
-	r.Use(gin.Recovery(), middlewares.Logger(), middlewares.BasicAuth())
+	// Load templates
+	r.LoadHTMLGlob("templates/*")
 
-	r.GET("/", func(c *gin.Context) {
+	apiRoutes := r.Group("/api")
+	apiRoutes.Use(gin.Recovery(), middlewares.Logger(), middlewares.BasicAuth())
+
+	apiRoutes.GET("/", func(c *gin.Context) {
 		c.String(200, "Welcome to Gin Tutorial")
 	})
-	r.GET("/posts", func(c *gin.Context) {
+	apiRoutes.GET("/posts", func(c *gin.Context) {
 		c.JSON(200, videoController.FindAll())
 	})
 
-	r.POST("/posts", func (ctx *gin.Context){
+	apiRoutes.POST("/posts", func (ctx *gin.Context){
 		_, err := videoController.Save(ctx)
 
 		if err != nil {
@@ -43,6 +46,12 @@ func main() {
 			ctx.JSON(http.StatusOK, gin.H{"message": "Video is valid and saved"})
 		}
 	})
+
+	// HTML routes for template rendering
+	r.GET("/", func(c *gin.Context) {
+		videoController.ShowAll(c)
+	})
+
 	fmt.Println("Server running at http://localhost:8080/")
 	r.Run(":8080")			
 

@@ -11,6 +11,7 @@ import (
 type VideoController interface {
 	Save(ctx *gin.Context) (entity.Video, error)
 	FindAll() []entity.Video
+	ShowAll(ctx *gin.Context)
 } 
 
 type controller struct {
@@ -32,6 +33,7 @@ func (c controller) Save(ctx *gin.Context) (entity.Video, error) {
 		return entity.Video{}, err
 	}
 
+	// for custom validation
 	err = validate.Struct(video)
 	if err != nil {
 		return entity.Video{}, err
@@ -42,4 +44,15 @@ func (c controller) Save(ctx *gin.Context) (entity.Video, error) {
 
 func (c controller) FindAll() []entity.Video {
 	return c.service.FindAll()
+}
+
+func (c controller) ShowAll(ctx *gin.Context) {
+	videos := c.service.FindAll()
+
+	data := gin.H{
+		"Title":  "Gin Template Rendering - Video List",
+		"videos": videos,
+		"Time":   ctx.GetString("time"),
+	}
+	ctx.HTML(200, "index.html", data)
 }
