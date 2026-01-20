@@ -19,8 +19,11 @@ func main() {
 
 	
 	r.Use(gin.Recovery(), middlewares.Logger())
+
+	r.GET("/", func(c *gin.Context) {
+		c.String(200, "Welcome to Gin Tutorial")
+	})
 	r.GET("/posts", func(c *gin.Context) {
-		c.String(200, "Hello, World!")
 		c.JSON(200, videoController.FindAll())
 	})
 
