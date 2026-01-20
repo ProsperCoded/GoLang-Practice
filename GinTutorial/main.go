@@ -35,12 +35,12 @@ func main() {
 	})
 
 	r.POST("/posts", func (ctx *gin.Context){
-		err := videoController.Save(ctx)
+		_, err := videoController.Save(ctx)
 
 		if err != nil {
 			ctx.JSON(400, gin.H{"error": err.Error()})	
 		}else {
-			ctx.JSON(http.StatusOk, gin.H{"message": "Video is valid and saved"})
+			ctx.JSON(http.StatusOK, gin.H{"message": "Video is valid and saved"})
 		}
 	})
 	fmt.Println("Server running at http://localhost:8080/")
